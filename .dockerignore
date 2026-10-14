@@ -1,0 +1,6 @@
+.git
+.tools
+.local
+target
+.env*
+prompt.md

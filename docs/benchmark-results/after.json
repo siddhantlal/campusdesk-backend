@@ -1,0 +1,2 @@
+{"measurement":"database via JDBC, not application API","warmup":100,"samples":500,"concurrency":1,
+ "durationSeconds":0.202216,"medianMs":0.365700,"p95Ms":0.502900,"errorRate":0,"throughputPerSecond":2472.599}

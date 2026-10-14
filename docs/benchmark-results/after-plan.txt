@@ -1,0 +1,9 @@
+Limit  (cost=0.29..1.90 rows=20 width=43) (actual time=0.021..0.030 rows=20 loops=1)
+  Buffers: shared hit=3
+  ->  Index Scan using tickets_creator_created_idx on tickets  (cost=0.29..805.85 rows=10000 width=43) (actual time=0.020..0.028 rows=20 loops=1)
+        Index Cond: (creator_id = '4'::bigint)
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=23
+Planning Time: 2.869 ms
+Execution Time: 0.051 ms

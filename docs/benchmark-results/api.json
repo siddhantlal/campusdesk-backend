@@ -1,0 +1,14 @@
+{
+  "measurement": "application HTTP API including authentication lookup, JPA, DTO JSON and count query",
+  "datasetTicketsForStudent": 10000,
+  "warmup": 20,
+  "samples": 100,
+  "concurrency": 4,
+  "durationSeconds": 1.4691115999994508,
+  "medianMs": 51.90460000085295,
+  "p95Ms": 88.79199999864795,
+  "errorRate": 0.0,
+  "successfulThroughputPerSecond": 68.06834824531872,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "logicalCpus": 12
+}

@@ -1,0 +1,44 @@
+# User-triggered Render deployment only. Both resources explicitly use the Free plan.
+services:
+  - type: web
+    name: campusdesk-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: campusdesk-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: campusdesk-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: campusdesk-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=50.0 -XX:+ExitOnOutOfMemoryError
+      - key: BOOTSTRAP_ADMIN_ENABLED
+        value: 'true'
+      - key: ADMIN_NAME
+        value: Campus Administrator
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DEMO_ENABLED
+        value: 'false'
+databases:
+  - name: campusdesk-db
+    plan: free
+    region: oregon
+    postgresMajorVersion: '17'
+    databaseName: campusdesk
+    user: campusdesk
+    ipAllowList: []

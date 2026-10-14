@@ -1,0 +1,19 @@
+# Security
+
+Passwords use BCrypt cost 12. Account passwords are 12..64 characters and at most 72 UTF-8 bytes: BCrypt's byte limit is checked explicitly to avoid truncation. Email normalization trims and lowercases with `Locale.ROOT`; uniqueness is enforced in PostgreSQL. Password hashes are never present in response DTOs.
+
+Public registration accepts only name/email/password and always creates STUDENT. Strict Jackson unknown-field handling rejects `role`, `active`, IDs and other protected fields. Only admins can create STAFF. No request can create/promote ADMIN. Startup bootstrap must be explicitly enabled and supplied credentials; it runs only when no admin exists. Administrators cannot deactivate themselves. Other administrators can deactivate an admin, but the acting admin stays active.
+
+Access tokens are HS256 JWTs with issuer `campusdesk`, audience `campusdesk-api`, subject user ID, and a 15-minute lifetime. The signing secret must decode from base64 to at least 32 random bytes. The decoder checks algorithm, signature, issuer, audience, expiry presence and validity (Spring Security's default clock-skew allowance applies). There are no refresh tokens. Protected requests query the current user, reject inactive/missing accounts, and derive authorities from the current database role. This blocks deactivated users even with unexpired tokens.
+
+Login failures use the same message for absent, incorrect-password and inactive accounts, with a BCrypt dummy comparison for nonexistent users. This reduces timing differences, but does not claim perfect constant-time handling. Registration duplicate errors intentionally reveal that an email is registered; add rate limiting and email verification for public production use.
+
+CSRF is disabled because the API authenticates using explicitly supplied `Authorization: Bearer` headers, never cookies or server sessions. Browsers do not automatically attach these headers to cross-site requests. If cookie authentication is introduced later, reassess CSRF protection. CORS accepts only configured exact origins; credentials are disabled. Rejecting origins does not restrict non-browser clients or replace authorization.
+
+Logout means the client discards its token. It does **not** revoke an issued token. Account deactivation blocks it on subsequent requests; key rotation invalidates all tokens signed by the old key. In-flight requests already authorized when deactivation commits may complete. A runtime role/active lookup occurs once per request, not again at every SQL statement.
+
+Errors use sanitized Problem Details with a generated correlation ID. Controllers and authentication handlers never log credentials, bearer tokens or sensitive bodies. Unexpected failures log only their exception class and correlation ID. Do not enable request-body logging or SQL bind logging with real accounts.
+
+Ticket visibility is checked before details/comments/history or mutations; hidden and nonexistent IDs both give `NOT_FOUND`. Method authorization protects admin/category/assignment/create routes. Database predicates protect list data and total counts. Closed tickets are terminal. Mutation version checks and JPA optimistic locking give 409 rather than silently overwriting.
+
+Operational limitations: HTTPS/TLS termination, rate limiting, email verification, password reset, MFA, key rotation orchestration and revocation lists are not implemented. Swagger is public for development; restrict it at your gateway for production. Health reveals no details. Local scripts use a database owner account for convenience; production should give runtime SQL only SELECT/INSERT/UPDATE where needed (event INSERT/SELECT only) and a separate migration identity. Protect local credential-file permissions and backups. Docker/local setup are development conveniences, not production deployment claims.
