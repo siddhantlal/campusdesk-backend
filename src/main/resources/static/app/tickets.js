@@ -1,5 +1,8 @@
 import { api, post, patch, query } from './api.js';
-import { e, icon, titleCase, badge, date, ticketCode, initials, empty, pager, modal, picker, wireForm, formNotice, formButtons, toast } from './ui.js';
+import { e, icon, titleCase, badge, date, ticketCode, initials, empty, pager, modal, picker, wireForm, formError, formNotice, formButtons, toast } from './ui.js';
+
+const commentDrafts = new Map();
+export function clearDrafts() { commentDrafts.clear(); }
 
 export const statuses = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
 export const chooseCategory = () => picker('Choose a service category', (page) => api(`/categories${query({ page, size: 20 })}`));
@@ -69,6 +72,18 @@ export async function ticketDetail(ctx, id) {
   const closed = ticket.status === 'CLOSED';
   const action = ticket.status === 'OPEN' && (admin || staff) ? '<button class="btn primary" data-progress>Start working</button>' : ticket.status === 'IN_PROGRESS' && (admin || staff) ? `<button class="btn primary" data-resolve>${icon('check')}Resolve request</button>` : ticket.status === 'RESOLVED' && (admin || owner) ? `<button class="btn" data-reopen>${icon('refresh')}Reopen</button><button class="btn primary" data-close-ticket>${icon('check')}Close request</button>` : '';
   ctx.content.innerHTML = `<a class="back-link" href="#/tickets">${icon('back')}Back to requests</a><div class="detail-heading"><div><div class="ticket-kicker"><span>${ticketCode(ticket.id)}</span>${badge(ticket.status)}</div><h1>${e(ticket.title)}</h1><p>Raised by <strong>${e(ticket.creator.name)}</strong> · ${date(ticket.createdAt, true)}</p></div><div class="heading-actions">${action}</div></div><div class="detail-grid"><div><section class="card description-card"><h2>The request</h2><p class="body-text">${e(ticket.description)}</p>${ticket.resolutionSummary ? `<div class="resolution-box"><span>${icon('check')}Resolution</span><p class="body-text">${e(ticket.resolutionSummary)}</p><small>Resolved ${date(ticket.resolvedAt, true)}</small></div>` : ''}</section><section class="card activity-card"><nav class="activity-tabs" aria-label="Request activity"><button class="selected" data-tab="comments">${icon('message')}Conversation</button><button data-tab="events">${icon('clock')}History</button></nav><div id="activity-list"></div><div id="activity-pager"></div>${closed ? `<div class="closed-note">${icon('check')}This request is closed. Its conversation and history are kept here.</div>` : `<form class="comment-form" id="comment-form">${formNotice}<label for="comment-body">Add to the conversation</label><textarea name="body" id="comment-body" required maxlength="2000" rows="3" placeholder="Share an update or ask a question…"></textarea><div class="comment-actions"><span class="muted">Visible to this request’s participants</span><button class="btn primary small" type="submit">Send comment${icon('arrow')}</button></div></form>`}</section></div><aside><section class="card details-card"><h2>At a glance</h2><dl><div><dt>Service category</dt><dd><a href="#/tickets${e(query({ categoryId: ticket.categoryId, categoryName: ticket.categoryName }))}">${icon('layers')}${e(ticket.categoryName)}</a></dd></div><div><dt>Priority</dt><dd>${badge(ticket.priority, 'priority')}</dd></div><div><dt>Assigned to</dt><dd>${ticket.assignee ? `<span class="person-inline"><span class="avatar small">${e(initials(ticket.assignee.name))}</span>${e(ticket.assignee.name)}</span>` : '<span class="muted">Awaiting assignment</span>'}</dd>${admin && !closed ? `<button class="btn small wide" data-assign>${icon('users')}${ticket.assignee ? 'Change assignee' : 'Assign staff'}</button>` : ''}</div><div><dt>Last updated</dt><dd>${date(ticket.updatedAt, true)}</dd></div>${ticket.closedAt ? `<div><dt>Closed</dt><dd>${date(ticket.closedAt, true)}</dd></div>` : ''}</dl></section><div class="detail-tip">${icon('leaf')}<p>${closed ? 'One less thing to worry about. Thanks for helping make campus better.' : 'A clear description and a helpful update can make all the difference.'}</p></div></aside></div>`;
+  const draftKey = `${ctx.user.id}:${id}`;
+  const draft = commentDrafts.get(draftKey);
+  if (draft) {
+    commentDrafts.delete(draftKey);
+    const form = ctx.content.querySelector('#comment-form');
+    if (form) {
+      form.elements.body.value = draft;
+      formError(form, new Error('This request changed. Review its latest details above; your unsent comment has been kept.'));
+    } else {
+      ctx.content.querySelector('.activity-card').insertAdjacentHTML('beforeend', `<div class="comment-form"><label for="unsent-draft">Your unsent comment</label><textarea id="unsent-draft" readonly>${e(draft)}</textarea><p class="field-hint">This request is closed. You can copy your draft, but no further comments can be added.</p></div>`);
+    }
+  }
   let activityGeneration = 0, tab = 'comments';
   const loadActivity = async (page = 0) => {
     const generation = ++activityGeneration;
@@ -127,18 +142,15 @@ export async function ticketDetail(ctx, id) {
       await post(`/tickets/${id}/comments`, { body: values.body.trim(), version: ticket.version });
     } catch (error) {
       if (error.status === 409) {
-        const latest = await api(`/tickets/${id}`);
-        Object.assign(ticket, latest);
-        if (latest.status === 'CLOSED') { comment.querySelector('textarea').disabled = true; toast('This request was closed. Your draft has been kept below.', true); }
-        error.message += ' Latest details retrieved. Review the request before retrying.';
+        commentDrafts.set(draftKey, values.body);
+        toast('This request changed. Reloading its details and keeping your draft.', true);
+        ctx.refresh();
+        return;
       }
       throw error;
     }
     comment.reset();
-    Object.assign(ticket, await api(`/tickets/${id}`));
-    toast('Comment shared.'); tab = 'comments';
-    ctx.content.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('selected', b.dataset.tab === tab));
-    loadActivity();
+    toast('Comment shared.'); ctx.refresh();
   });
   loadActivity();
 }

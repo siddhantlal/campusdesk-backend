@@ -41,3 +41,16 @@ The first run found a percent-encoded MockMvc URI being encoded twice by its tem
 Local PostgreSQL and Testcontainers are distinct execution paths. **Full application Docker image/Compose, Testcontainers startup and remote GitHub Actions have not been verified.** No skipped or unexecuted tests are counted as passing.
 
 Render build diagnosis, 14 October 2026: a fresh matching Linux base-image container reproduced the Maven distribution checksum failure. It lacked `unzip`, so Maven Wrapper substituted the tar.gz archive while validating the ZIP checksum. Installing `unzip` made fresh-cache `./mvnw -B -ntp --version` succeed. The Dockerfile now includes that build prerequisite; checksum verification remains enabled. No additional application tests were run for this Dockerfile-only fix.
+
+## Frontend verification — 15 October 2026
+
+The frontend is packaged into the same Spring Boot jar and served on the same origin as the API. Focused verification, rather than another full suite run:
+
+- JavaScript module and browser-check script syntax: passed with `node --check`.
+- Existing workflow unit tests: **2 executed, 0 failures/errors/skips**.
+- Targeted PostgreSQL integration scenario `permissionsHideTicketsAndScopeListCounts`: **1 executed, 0 failures/errors/skips**, 20.69 seconds. Added assertions cover public homepage/module resources, protected unauthenticated ticket APIs, and paginated role/active/name filtering for admin staff search; existing visibility/authorization assertions remain in that scenario.
+- Maven `verify` for those selected checks: **BUILD SUCCESS**, 1 minute 9 seconds. Final resource packaging with application tests skipped: **BUILD SUCCESS**, 7.052 seconds.
+- `node scripts/check-frontend.mjs`: **one complete local browser workflow passed**, using isolated installed-Chrome sessions and real APIs/PostgreSQL. It created a category, staff and student accounts, created and assigned ticket 10003, commented, resolved, reopened with a reason, resolved again, closed, and inspected history. It also checked role-specific navigation, escaped HTML-like input, closed-comment restrictions, mobile navigation/overflow, tab session restoration and logout. No unhandled browser JavaScript errors were raised.
+- Desktop login/overview/detail and mobile overview screenshots were inspected from `.local/frontend-check/`.
+
+The first browser attempt completed assignment but its exact text locator did not account for the avatar text beside the name. Correcting that test locator allowed the workflow to finish. No mocked APIs, new benchmark, full integration-suite rerun, GitHub push, or Render frontend deployment was performed for this change. The earlier seven-test result above remains a historical backend result, not a claim that all seven were rerun after the frontend update.

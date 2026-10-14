@@ -2,7 +2,7 @@ import { api, authenticated, saveToken } from './api.js';
 import { e, brand, icon, initials, titleCase, loading, empty, modal, toast } from './ui.js';
 import { authView } from './auth.js';
 import { dashboard } from './dashboard.js';
-import { ticketsView, ticketDetail, createTicket } from './tickets.js';
+import { ticketsView, ticketDetail, createTicket, clearDrafts } from './tickets.js';
 import { categoriesView, categoryForm, peopleView, staffForm } from './admin.js';
 
 const root = document.querySelector('#app');
@@ -12,7 +12,7 @@ function go(path) {
   if (location.hash === hash) render(); else location.hash = hash;
 }
 function logout(message = '') {
-  saveToken(''); user = null; go('/signin');
+  saveToken(''); clearDrafts(); user = null; go('/signin');
   if (message) toast(message, true);
 }
 function help() {

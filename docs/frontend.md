@@ -36,3 +36,14 @@ powershell -ExecutionPolicy Bypass -File scripts/run-local.ps1
 Open `http://localhost:8080/`. If a background instance is already running, stop it with `scripts/stop-app.ps1` before launching the updated runtime copy.
 
 Commit the frontend and small API/security updates, push your repository, then deploy the latest commit on the existing Render web service. The homepage appears at the same `.onrender.com` URL, with Swagger still available at `/swagger-ui.html`. Leave `BOOTSTRAP_ADMIN_ENABLED=false` once your initial administrator exists.
+
+## Focused browser verification
+
+The optional local-only browser check uses Node and Playwright with an installed Chrome/Edge. These tools are not application dependencies and are not needed by Render. With local PostgreSQL and the app running:
+
+```powershell
+npm.cmd install --prefix .tools/ui-check --no-audit --no-fund playwright@1.64.1
+node scripts/check-frontend.mjs
+```
+
+It reads the local administrator credentials from ignored `.local/local.env`, creates synthetic development accounts/data, and checks the student/staff/admin workflow, literal text escaping, session restoration/logout, and mobile layout/navigation. It refuses non-local URLs. Screenshots are saved under `.local/frontend-check/`; synthetic records are retained in the development database. `BROWSER_EXECUTABLE` can select another installed Chromium browser. The latest run passed on 15 October 2026; see `docs/testing.md`.

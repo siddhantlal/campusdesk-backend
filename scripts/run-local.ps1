@@ -8,7 +8,7 @@ if (-not $SkipBuild) {
     & .\mvnw.cmd -B -ntp '-Dmaven.repo.local=.tools/m2' -DskipTests package
     Assert-NativeSuccess 'Application build'
 }
-Write-Host 'CampusDesk: http://localhost:8080/swagger-ui.html (Ctrl+C stops the application)'
+Write-Host 'CampusDesk: http://localhost:8080/ (Swagger: /swagger-ui.html; Ctrl+C stops the application)'
 # Run a copy so Windows can rebuild target/ while the application is running.
 $runtime = Join-Path $ProjectRoot '.local\runtime'
 New-Item -ItemType Directory -Force $runtime | Out-Null

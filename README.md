@@ -96,7 +96,7 @@ The benchmark inserts 10,000 synthetic tickets, saves before/after query plans, 
 
 ## Render deployment
 
-The root [render.yaml](render.yaml) configures a Docker web service and managed PostgreSQL using Free plans. Render builds the image remotely; local development remains non-Docker. See [step-by-step Render instructions](docs/render.md), including initial admin creation and the free database's 30-day expiry. No hosted deployment has been performed.
+The root [render.yaml](render.yaml) configures a Docker web service and managed PostgreSQL using Free plans. Render builds the image remotely; local development remains non-Docker. See [step-by-step Render instructions](docs/render.md), including initial admin creation and the free database's 30-day expiry.
 
 The frontend is included in the application jar. Redeploy the same backend service to get student, staff and admin workspaces at its root URL. See [frontend features and implementation](docs/frontend.md). There is no npm build or separate frontend hosting step.
 

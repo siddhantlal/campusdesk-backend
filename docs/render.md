@@ -39,7 +39,7 @@ Use `/actuator/health` as the health-check path. Keep the Docker command unset s
 
 Render's free web services sleep after inactivity, so cold starts can be slow. **Free Render PostgreSQL expires after 30 days**, with subsequent deletion unless upgraded during the grace period. It is suitable for a temporary demonstration; choose a durable database plan/provider for a lasting placement portfolio and review its cost before creating resources. See [Render free-tier rules](https://render.com/docs/free).
 
-Java's memory cap in the blueprint leaves space for non-heap memory on small instances; actual hosted memory/startup behavior still needs observation. Seven essential tests, the workflow and benchmark passed locally. A Render image-build attempt failed during Maven bootstrap; the corrected bootstrap has since been verified in the matching Linux base image. **A successful Render deployment and full application image build have not been confirmed.**
+Java's memory cap in the blueprint leaves space for non-heap memory on small instances; observe hosted memory and startup behavior after deployment. Backend tests, the workflow and benchmark passed locally. The user subsequently confirmed that the backend was live. The frontend added on 15 October 2026 has been verified locally and still requires deploying the latest commit to the same service. See `docs/testing.md` for the exact checks; local verification is not a claim that the new frontend has been published.
 
 ## Maven checksum failure during image build
 

@@ -49,10 +49,13 @@ export function pager(page, change) {
   el.querySelector('[data-next]').onclick = () => change(page.page + 1);
   return el;
 }
+let dialogSequence = 0;
 export function modal(title, content, description = '') {
   const el = document.createElement('dialog');
   el.className = 'modal';
-  el.innerHTML = `<div class="modal-heading"><div><h2>${e(title)}</h2>${description ? `<p>${e(description)}</p>` : ''}</div><button class="icon-btn" type="button" data-close aria-label="Close dialog">${icon('close')}</button></div>${content}`;
+    const headingId = `dialog-title-${++dialogSequence}`;
+    el.setAttribute('aria-labelledby', headingId);
+    el.innerHTML = `<div class="modal-heading"><div><h2 id="${headingId}">${e(title)}</h2>${description ? `<p>${e(description)}</p>` : ''}</div><button class="icon-btn" type="button" data-close aria-label="Close dialog">${icon('close')}</button></div>${content}`;
   el.addEventListener('close', () => el.remove(), { once: true });
   el.addEventListener('click', event => {
     if (event.target === el) {
