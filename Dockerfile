@@ -1,5 +1,7 @@
 FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /build
+# The wrapper's pinned checksum is for ZIP. Without unzip it switches to tar.gz.
+RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
 COPY .mvn .mvn
 COPY mvnw pom.xml ./
 RUN chmod +x mvnw && ./mvnw -B -ntp dependency:go-offline

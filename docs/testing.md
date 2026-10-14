@@ -38,4 +38,6 @@ For Docker-enabled hosts: `./mvnw -B -ntp verify`. Unit-only check: `./mvnw test
 
 The first run found a percent-encoded MockMvc URI being encoded twice by its template builder. Using the URI overload corrected that test fixture. A subsequent build encountered Windows' running-jar lock; the runner now executes a runtime copy so `target/` remains rebuildable. These initial failed checks are not counted as passes.
 
-Local PostgreSQL and Testcontainers are distinct execution paths. **Docker images/Compose, Testcontainers startup and remote GitHub Actions were not executed.** They are supplied as optional packaging/CI configurations. No skipped or unexecuted tests are counted as passing.
+Local PostgreSQL and Testcontainers are distinct execution paths. **Full application Docker image/Compose, Testcontainers startup and remote GitHub Actions have not been verified.** No skipped or unexecuted tests are counted as passing.
+
+Render build diagnosis, 14 October 2026: a fresh matching Linux base-image container reproduced the Maven distribution checksum failure. It lacked `unzip`, so Maven Wrapper substituted the tar.gz archive while validating the ZIP checksum. Installing `unzip` made fresh-cache `./mvnw -B -ntp --version` succeed. The Dockerfile now includes that build prerequisite; checksum verification remains enabled. No additional application tests were run for this Dockerfile-only fix.

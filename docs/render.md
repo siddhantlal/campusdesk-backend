@@ -39,4 +39,12 @@ Use `/actuator/health` as the health-check path. Keep the Docker command unset s
 
 Render's free web services sleep after inactivity, so cold starts can be slow. **Free Render PostgreSQL expires after 30 days**, with subsequent deletion unless upgraded during the grace period. It is suitable for a temporary demonstration; choose a durable database plan/provider for a lasting placement portfolio and review its cost before creating resources. See [Render free-tier rules](https://render.com/docs/free).
 
-Java's memory cap in the blueprint leaves space for non-heap memory on small instances; actual hosted memory/startup behavior still needs observation. Seven essential tests, the workflow and benchmark passed locally; **no Render deployment or Docker image build has been executed**. This is deployment configuration and a procedure, not a claim that a public site is live.
+Java's memory cap in the blueprint leaves space for non-heap memory on small instances; actual hosted memory/startup behavior still needs observation. Seven essential tests, the workflow and benchmark passed locally. A Render image-build attempt failed during Maven bootstrap; the corrected bootstrap has since been verified in the matching Linux base image. **A successful Render deployment and full application image build have not been confirmed.**
+
+## Maven checksum failure during image build
+
+If Maven Wrapper reports `Failed to validate Maven distribution SHA-256` before compilation, check that the build stage installs `unzip`. The wrapper downloads a tar.gz instead of the configured ZIP when `unzip` is absent; those archives have different checksums. The Dockerfile now installs `unzip` before running Maven so it downloads the ZIP matching the pinned checksum. Keep checksum verification enabled.
+
+Verified on 14 October 2026 in a fresh `eclipse-temurin:21-jdk-jammy` container: the original setup reproduced the exact checksum failure; installing `unzip` allowed `./mvnw -B -ntp --version` to succeed with Maven 3.9.11 and Java 21.0.12.1. This focused check did not rerun the application test suite or claim that the hosted service was healthy.
+
+After pushing this Dockerfile change, choose **Manual Deploy → Deploy latest commit** in Render. If Render still shows the old Dockerfile, use **Clear build cache & deploy** and confirm the selected commit includes the fix.
