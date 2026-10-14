@@ -75,6 +75,8 @@ Account status: `{"active":false,"version":0}`. Category update: `{"name":"Facil
 
 Admins may additionally specify `assigneeId`. Filters combine with AND. Title search is a literal, case-insensitive substring; URL encode spaces, `%` and other special characters. Sorting allows only `createdAt`/`updatedAt` and `asc`/`desc`; ID uses the same direction as the stable tie-breaker. Page is 0..100000; size is 1..100. Defaults are page 0, size 20, createdAt descending. Activity defaults to oldest first. Categories sort by name/ID. Users sort by ID.
 
+`GET /admin/users` also supports optional `role`, `active` and `search` filters for the frontend's account management and staff picker. Search is a literal, case-insensitive substring of name or email (maximum 100 characters). Example: `/admin/users?role=STAFF&active=true&search=asha&page=0&size=20`. Filtering and total counts happen in the database; administrator authorization still applies.
+
 All pages return `content`, `page`, `size`, `totalElements`, `totalPages`. Counts reflect only the caller's visibility. `GET /categories?includeInactive=true` requires admin.
 
 ## Validation limits

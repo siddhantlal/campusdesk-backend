@@ -34,7 +34,7 @@ Use these answers to explain the implementation and its tradeoffs. Open the name
 
 ## Known limitations
 
-No password reset, email verification, attachments, notifications, refresh tokens or MFA. No UI. The public API lacks rate limiting; production TLS/gateway and least-privilege database access are operational work. Offset pagination and literal substring search have scaling limits. Runtime active status is checked at request entry. Bootstrap is a controlled startup mechanism, not an admin provisioning UI. These are deliberate scope boundaries, not hidden placeholder workflows.
+No password reset, email verification, attachments, notifications, refresh tokens or MFA. The public API lacks rate limiting; production TLS/gateway and least-privilege database access are operational work. Offset pagination and literal substring search have scaling limits. Runtime active status is checked at request entry. Bootstrap is a controlled startup mechanism, not an admin provisioning UI. The browser frontend is served by the same Spring Boot service; its role controls supplement the server's authorization. These are deliberate scope boundaries, not hidden placeholder workflows.
 
 ## Résumé bullets
 

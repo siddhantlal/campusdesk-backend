@@ -2,6 +2,8 @@
 
 CampusDesk is a modular monolith: one process and one relational database, organized by feature (`auth`, `users`, `categories`, `tickets`, `common`). Ticket state and history need one reliable transaction; splitting them into services would add distributed consistency and operational complexity without a requirement.
 
+The browser frontend is packaged as static Spring Boot resources with native JavaScript feature modules. It calls the API on the same origin, uses hash-based navigation, and requires no separate build/runtime service. Its role-specific controls are user experience aids; the backend remains the authorization authority. See `docs/frontend.md`.
+
 Request flow: correlation filter → Spring Security bearer-token verification → current user lookup → controller DTO validation and coarse role check → transactional service with ticket visibility/lifecycle rules → Spring Data JPA → PostgreSQL. DTO mapping happens inside read transactions with Open Session in View disabled. Controllers never serialize persistence entities.
 
 The ticket service owns assignment and status changes. The activity service owns comments/history reads and shares the ticket access rules. `TicketWorkflow` is a small pure rule component, not a generic state-machine framework. Repositories contain database access. Entity graphs fetch only many-to-one ticket/category/user data, never pageable collections. Comments and events are independently paginated.

@@ -2,7 +2,7 @@
 
 A Java 21 / Spring Boot backend for a campus service desk. Students raise tickets, assigned staff investigate and resolve them, and administrators manage assignment, accounts and categories. This is a modular monolith with PostgreSQL migrations, signed access tokens, a transactional audit history and explicit ticket permissions.
 
-**The main setup runs without Docker. No frontend is required: use Swagger UI or the executable curl walkthrough.**
+**The main local setup runs without Docker. The frontend and API are served together by Spring Boot and the same Render service.**
 
 ## Run locally on Windows
 
@@ -19,6 +19,7 @@ Setup downloads checksum-verified PostgreSQL 17.6 binaries into `.tools`, initia
 
 The first application start creates the admin specified by the ignored `.local/local.env`. View that file locally to log in through Swagger. Set `BOOTSTRAP_ADMIN_ENABLED=false` after the first successful start. Public registration creates students; the admin creates staff. The bootstrap only creates an admin when none exists and never resets passwords. No default password is committed.
 
+- CampusDesk frontend: http://localhost:8080/
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 - Health: http://localhost:8080/actuator/health
@@ -96,6 +97,8 @@ The benchmark inserts 10,000 synthetic tickets, saves before/after query plans, 
 ## Render deployment
 
 The root [render.yaml](render.yaml) configures a Docker web service and managed PostgreSQL using Free plans. Render builds the image remotely; local development remains non-Docker. See [step-by-step Render instructions](docs/render.md), including initial admin creation and the free database's 30-day expiry. No hosted deployment has been performed.
+
+The frontend is included in the application jar. Redeploy the same backend service to get student, staff and admin workspaces at its root URL. See [frontend features and implementation](docs/frontend.md). There is no npm build or separate frontend hosting step.
 
 ## Documentation
 

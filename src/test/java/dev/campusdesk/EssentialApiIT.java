@@ -112,6 +112,12 @@ class EssentialApiIT {
         call("POST","/api/v1/auth/login",null,Map.of("email","student@test.example","password",PASSWORD),401);
     }
     @Test void permissionsHideTicketsAndScopeListCounts() throws Exception {
+        call("GET","/",null,null,200);
+        call("GET","/app/app.js",null,null,200);
+        call("GET","/api/v1/tickets",null,null,401);
+        JsonNode staffSearch=json(call("GET","/api/v1/admin/users?role=STAFF&active=true&search=Two",admin,null,200));
+        assertThat(staffSearch.get("totalElements").asInt()).isEqualTo(1);
+        assertThat(staffSearch.get("content").get(0).get("id").asLong()).isEqualTo(secondStaffId);
         JsonNode t=create("Library Wi-Fi"); long id=t.get("id").asLong();
         call("GET","/api/v1/tickets/"+id,other,null,404);
         call("GET","/api/v1/tickets/999999",other,null,404);

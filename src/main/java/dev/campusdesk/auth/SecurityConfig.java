@@ -64,6 +64,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable()).cors(c -> c.configurationSource(source))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/", "/index.html", "/app/**", "/favicon.svg").permitAll()
                 .requestMatchers("/api/v1/auth/**","/actuator/health","/swagger-ui/**","/swagger-ui.html","/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated())
             .exceptionHandling(e -> e.authenticationEntryPoint(entry).accessDeniedHandler(denied))

@@ -30,9 +30,21 @@ public class UserService {
     @Transactional(readOnly=true)
     public UserResponse get(long id) { return UserResponse.of(users.findById(id).orElseThrow(() -> ApiException.missing("User"))); }
     @Transactional(readOnly=true)
-    public PageResponse<UserResponse> list(int page, int size) {
+    public PageResponse<UserResponse> list(int page, int size, Role role, Boolean active, String search) {
         Paging.request(page,size,"createdAt","desc");
-        return PageResponse.of(users.findAll(PageRequest.of(page,size,Sort.by("id"))).map(UserResponse::of));
+        if (search != null && search.length() > 100) throw new ApiException(400, "INVALID_SEARCH", "User search must be at most 100 characters");
+        org.springframework.data.jpa.domain.Specification<User> filter = (root, query, cb) -> {
+            var conditions = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+            if (role != null) conditions.add(cb.equal(root.get("role"), role));
+            if (active != null) conditions.add(cb.equal(root.get("active"), active));
+            if (search != null && !search.isBlank()) {
+                String term = search.trim().toLowerCase(java.util.Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+                conditions.add(cb.or(cb.like(cb.lower(root.get("name")), "%" + term + "%", '\\'),
+                    cb.like(cb.lower(root.get("email")), "%" + term + "%", '\\')));
+            }
+            return cb.and(conditions.toArray(jakarta.persistence.criteria.Predicate[]::new));
+        };
+        return PageResponse.of(users.findAll(filter, PageRequest.of(page,size,Sort.by("id"))).map(UserResponse::of));
     }
     @Transactional
     public UserResponse setActive(long id, AccountStatus request, long callerId) {

@@ -17,7 +17,10 @@ public class AdminController {
     @PostMapping("/staff") @ResponseStatus(HttpStatus.CREATED)
     public UserResponse staff(@Valid @RequestBody AccountRequest request) { return users.create(request,Role.STAFF); }
     @GetMapping("/users")
-    public PageResponse<UserResponse> list(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) { return users.list(page,size); }
+    public PageResponse<UserResponse> list(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,
+            @RequestParam(required=false) Role role,@RequestParam(required=false) Boolean active,@RequestParam(required=false) String search) {
+        return users.list(page,size,role,active,search);
+    }
     @PatchMapping("/users/{id}/status")
     public UserResponse status(@PathVariable long id,@Valid @RequestBody AccountStatus request,@AuthenticationPrincipal CurrentUser caller) { return users.setActive(id,request,caller.id()); }
     @GetMapping("/statistics")
